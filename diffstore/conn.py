@@ -9,9 +9,10 @@ class BaseConnection:
         """
         Connect to the database.
         """
-        NotImplementedError("Not implemented yet.")
+        
 
-class DuckDBConnection(BaseConnection):
+
+class DDBConnection(BaseConnection):
     """
     A connection object for DuckDB.
     """
@@ -22,23 +23,42 @@ class DuckDBConnection(BaseConnection):
         Returns:
             duckdb.Connection: A connection object for the DuckDB database.
         """
-        NotImplementedError("Not implemented yet.")
+        
+        return duckdb.connect("motherduck:")
     
-
-class ConnectionFactory: 
-    
-    def get_connection(self, db_type: str) -> duckdb.DuckDBPyConnection:
+    def attach(self, db_path: str):
         """
-        Get a connection object for the specified database type.
+        Attach a database to the DuckDB database.
 
         Args:
-            db_type (str): The type of database to connect to.
+            db_path (str): The path to the database to attach.
 
         Returns:
-            BaseConnection: A connection object for the specified database type.
+            duckdb.Cursor: A cursor object for the DuckDB database.
         """
-        if db_type == "duckdb":
-            return duckdb.DuckDBPyConnection()
-        else:
-            raise ValueError(f"Unsupported database type: {db_type}")
-        
+        return self.connect().sql(f"ATTACH DATABASE '{db_path}' AS diffstore")
+
+
+def get_connection(db_type: str):
+    """
+    Get a connection object for the database type.
+
+    Args:
+        db_type (str): The type of database to connect to.
+
+    Returns:
+        BaseConnection: A connection object for the database type.
+    """
+    if db_type == "duckdb":
+        return DDBConnection()
+    else:
+        raise ValueError(f"Unknown database type '{db_type}'")
+    
+
+# conn = get_connection("duckdb")
+# conn.connect()
+# attach a .duckdb file to motherduck
+# conn.attach("mydb.duckdb")
+
+
+
